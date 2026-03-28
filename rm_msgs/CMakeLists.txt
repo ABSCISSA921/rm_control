@@ -16,7 +16,9 @@ add_message_files(
         BulletSolverData.msg
         BusState.msg
         DbusData.msg
+        Dart.msg
         ExchangerMsg.msg
+        ChassisActiveSusCmd.msg
         ChassisCmd.msg
         DebugData.msg
         ShootCmd.msg
@@ -55,6 +57,8 @@ add_service_files(
         CameraStatus.srv
         EnableImuTrigger.srv
         EnableGyro.srv
+        ExtraFrictionWheelSpeed.srv
+        ShooterSpeed.srv
 )
 
 add_message_files(
@@ -87,19 +91,29 @@ add_message_files(
         BulletAllowance.msg
         RfidStatus.msg
         DartClientCmd.msg
+        DartRemainingTime.msg
         ManualToReferee.msg
         RadarData.msg
+        RadarCmd.msg
         RadarMarkData.msg
         RobotsPositionData.msg
         ClientMapSendData.msg
         ClientMapReceiveData.msg
         MapSentryData.msg
         GameRobotPosData.msg
+        EnemyHpInfo.msg
         SentryInfo.msg
         RadarInfo.msg
         Buff.msg
         RadarToSentry.msg
         SentryCmd.msg
+        RadarWirelessEnemyCallSign.msg
+        RadarWirelessEnemyCoinAndFieldStatus.msg
+        RadarWirelessEnemyProjectileAllowance.msg
+        RadarWirelessEnemyRobotBuff.msg
+        RadarWirelessEnemyRobotHp.msg
+        RadarWirelessEnemyRobotPos.msg
+        RobotCustomData2.msg
         VisualizeStateData.msg
         PowerManagementSampleAndStatusData.msg
         PowerManagementInitializationExceptionData.msg
@@ -111,6 +125,7 @@ add_message_files(
 add_action_files(
         FILES
         Engineer.action
+        QueryGlobalLocalization.action
 )
 # Generate added messages and services with any dependencies listed here
 generate_messages(
