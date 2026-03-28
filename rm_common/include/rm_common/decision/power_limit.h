@@ -60,6 +60,10 @@ public:
       ROS_ERROR("Disable cap gyro threshold no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("enable_cap_gyro_threshold", enable_cap_gyro_threshold_))
       ROS_ERROR("Enable cap gyro threshold no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("disable_use_cap_threshold", disable_use_cap_threshold_))
+      ROS_ERROR("Disable use cap threshold no defined (namespace: %s)", nh.getNamespace().c_str());
+    if (!nh.getParam("enable_use_cap_threshold", enable_use_cap_threshold_))
+      ROS_ERROR("Enable use cap threshold no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("charge_power", charge_power_))
       ROS_ERROR("Charge power no defined (namespace: %s)", nh.getNamespace().c_str());
     if (!nh.getParam("extra_power", extra_power_))
@@ -117,7 +121,7 @@ public:
   }
   void setCapacityData(const rm_msgs::PowerManagementSampleAndStatusData data)
   {
-    capacity_is_online_ = ros::Time::now() - data.stamp < ros::Duration(0.3);
+    capacity_is_online_ = ros::Time::now() - data.stamp < ros::Duration(10);
     cap_energy_ = data.capacity_remain_charge;
     cap_state_ = data.state_machine_running_state;
   }
@@ -146,7 +150,25 @@ public:
     if (allow_gyro_cap_ && chassis_power_limit_ < 80)
       chassis_cmd.power_limit = chassis_power_limit_ + extra_power_;
     else
-      expect_state_ = NORMAL;
+      normal(chassis_cmd);
+    // expect_state_ = NORMAL;
+  }
+  void setBurstPower(rm_msgs::ChassisCmd& chassis_cmd)
+  {
+    if (!allow_use_cap_ && cap_energy_ >= enable_use_cap_threshold_)
+      allow_use_cap_ = true;
+    if (allow_use_cap_ && cap_energy_ <= disable_use_cap_threshold_)
+      allow_use_cap_ = false;
+    if (allow_use_cap_)
+    {
+      if (ros::Time::now() - start_burst_time_ < ros::Duration(total_burst_time_))
+        chassis_cmd.power_limit = burst_power_;
+      else
+        chassis_cmd.power_limit = standard_power_;
+    }
+    else
+      normal(chassis_cmd);
+    // expect_state_ = NORMAL;
   }
   void setLimitPower(rm_msgs::ChassisCmd& chassis_cmd, bool is_gyro)
   {
@@ -211,7 +233,7 @@ private:
     {
       if (is_gyro)
         setGyroPower(chassis_cmd);
-      else if (ros::Time::now() - start_burst_time_ < ros::Duration(total_burst_time_))
+      else if (ros::Time::now() - start_burst_time_ > ros::Duration(total_burst_time_))
         chassis_cmd.power_limit = burst_power_;
       else
         chassis_cmd.power_limit = standard_power_;
@@ -228,12 +250,14 @@ private:
   double capacitor_threshold_{};
   double power_buffer_threshold_{ 50.0 };
   double enable_cap_gyro_threshold_{}, disable_cap_gyro_threshold_{};
+  double enable_use_cap_threshold_{}, disable_use_cap_threshold_{};
   double charge_power_{}, extra_power_{}, burst_power_{}, standard_power_{};
   double buffer_threshold_{};
   double power_gain_{};
   bool is_new_capacitor_{ false };
   uint8_t expect_state_{}, cap_state_{};
   bool capacitor_is_on_{ true };
+  bool allow_use_cap_{ false };
   bool allow_gyro_cap_{ false };
 
   ros::Time start_burst_time_{};

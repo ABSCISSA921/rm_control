@@ -344,7 +344,6 @@ typedef struct
   float reserved_3;
   uint16_t chassis_power_buffer;
   uint16_t shooter_id_1_17_mm_cooling_heat;
-  uint16_t shooter_id_2_17_mm_cooling_heat;
   uint16_t shooter_id_1_42_mm_cooling_heat;
 } __packed PowerHeatData;
 
