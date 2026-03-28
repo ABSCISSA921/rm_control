@@ -13,10 +13,12 @@ add_message_files(
         FILES
         ActuatorState.msg
         BalanceState.msg
+        BulletSolverData.msg
         BusState.msg
         DbusData.msg
         ExchangerMsg.msg
         ChassisCmd.msg
+        DebugData.msg
         ShootCmd.msg
         ShootState.msg
         ShootBeforehandCmd.msg
@@ -30,6 +32,7 @@ add_message_files(
         LeggedLQRStatus.msg
         LQRkMatrix.msg
         LpData.msg
+        LocalHeatData.msg
         LocalHeatState.msg
         KalmanData.msg
         MovingAverageData.msg
