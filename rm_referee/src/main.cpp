@@ -17,6 +17,6 @@ int main(int argc, char** argv)
     referee.read();
     loop_rate.sleep();
   }
-  
+
   return 0;
 }
