@@ -136,6 +136,10 @@ public:
   {
     start_burst_time_ = start_burst_time;
   }
+  inline void setBurstPowerLimit(const double& burst_power_limit)
+  {
+    burst_power_ = burst_power_limit;
+  }
   ros::Time getStartBurstTime() const
   {
     return start_burst_time_;

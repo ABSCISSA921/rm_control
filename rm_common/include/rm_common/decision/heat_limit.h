@@ -147,6 +147,8 @@ public:
   double getShootFrequency() const
   {
     std::lock_guard<std::mutex> lock(heat_mutex_);
+    if (!referee_is_online_)
+      return 5.0;
     if (state_ == BURST)
       return shoot_frequency_;
     double shooter_cooling_heat =
