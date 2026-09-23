@@ -39,6 +39,8 @@
 
 #include <gazebo_ros_control/gazebo_ros_control_plugin.h>
 
+#include <set>
+
 namespace rm_gazebo
 {
 bool RmRobotHWSim::initSim(const std::string& robot_namespace, ros::NodeHandle model_nh,
@@ -46,18 +48,20 @@ bool RmRobotHWSim::initSim(const std::string& robot_namespace, ros::NodeHandle m
                            std::vector<transmission_interface::TransmissionInfo> transmissions)
 {
   bool ret = DefaultRobotHWSim::initSim(robot_namespace, model_nh, parent_model, urdf_model, transmissions);
-  // Joint interface
-  registerInterface(&hybridJointInterface_);
-  std::vector<std::string> names = ej_interface_.getNames();
-  for (const auto& name : names)
-  {
-    hybridJointDatas_.push_back(HybridJointData{ .joint_ = ej_interface_.getHandle(name) });
-    HybridJointData& back = hybridJointDatas_.back();
-    hybridJointInterface_.registerHandle(
-        rm_control::HybridJointHandle(back.joint_, &back.posDes_, &back.velDes_, &back.kp_, &back.kd_, &back.ff_));
-    cmdBuffer_.insert(std::make_pair(name.c_str(), std::deque<HybridJointCommand>()));
-  }
+  if (!ret)
+    return false;
 
+  hardware_interface::JointStateInterface* default_joint_state_interface =
+      get<hardware_interface::JointStateInterface>();
+  if (default_joint_state_interface == nullptr)
+  {
+    ROS_ERROR("DefaultRobotHWSim did not register a JointStateInterface");
+    return false;
+  }
+  for (const auto& joint_name : default_joint_state_interface->getNames())
+    combined_joint_state_interface_.registerHandle(default_joint_state_interface->getHandle(joint_name));
+  registerPassiveJoints(parent_model, urdf_model, transmissions);
+  gazebo_ros_control::DefaultRobotHWSim::registerInterface(&combined_joint_state_interface_);
   gazebo_ros_control::DefaultRobotHWSim::registerInterface(&robot_state_interface_);
   gazebo_ros_control::DefaultRobotHWSim::registerInterface(&imu_sensor_interface_);
   gazebo_ros_control::DefaultRobotHWSim::registerInterface(&rm_imu_sensor_interface_);
@@ -75,6 +79,13 @@ bool RmRobotHWSim::initSim(const std::string& robot_namespace, ros::NodeHandle m
 void RmRobotHWSim::readSim(ros::Time time, ros::Duration period)
 {
   gazebo_ros_control::DefaultRobotHWSim::readSim(time, period);
+  for (auto& joint : passive_joint_datas_)
+  {
+    joint.position = joint.joint_ptr->Position(0);
+    joint.velocity = joint.joint_ptr->GetVelocity(0);
+    joint.effort = joint.joint_ptr->GetForce(0);
+  }
+
   if (!disable_imu_)
   {
     for (auto& imu : imu_datas_)
@@ -104,43 +115,48 @@ void RmRobotHWSim::readSim(ros::Time time, ros::Duration period)
     cmd = 0;
   for (auto& cmd : joint_velocity_command_)
     cmd = 0;
-  for (auto& joint : hybridJointDatas_)
-  {
-    joint.posDes_ = joint.joint_.getPosition();
-    joint.velDes_ = joint.joint_.getVelocity();
-    joint.kp_ = 0.;
-    joint.kd_ = 0.;
-    joint.ff_ = 0.;
-  }
 }
-
-void RmRobotHWSim::writeSim(ros::Time time, ros::Duration period)
+void RmRobotHWSim::registerPassiveJoints(
+    const gazebo::physics::ModelPtr& parent_model, const urdf::Model* urdf_model,
+    const std::vector<transmission_interface::TransmissionInfo>& transmissions)
 {
-  for (auto joint : hybridJointDatas_)
+  if (urdf_model == nullptr)
   {
-    auto& buffer = cmdBuffer_.find(joint.joint_.getName())->second;
-    if (time == ros::Time(period.toSec()))
-    {  // Simulation reset
-      buffer.clear();
-    }
-
-    while (!buffer.empty() && buffer.back().stamp_ + ros::Duration(delay_) < time)
-    {
-      buffer.pop_back();
-    }
-    buffer.push_front(HybridJointCommand{ .stamp_ = time,
-                                          .posDes_ = joint.posDes_,
-                                          .velDes_ = joint.velDes_,
-                                          .kp_ = joint.kp_,
-                                          .kd_ = joint.kd_,
-                                          .ff_ = joint.ff_ });
-
-    const auto& cmd = buffer.back();
-    if (joint.joint_.getCommand() == 0.0f)
-      joint.joint_.setCommand(cmd.kp_ * (cmd.posDes_ - joint.joint_.getPosition()) +
-                              cmd.kd_ * (cmd.velDes_ - joint.joint_.getVelocity()) + cmd.ff_);
+    ROS_WARN("Cannot register passive joints without a URDF model");
+    return;
   }
-  DefaultRobotHWSim::writeSim(time, period);
+
+  std::set<std::string> transmitted_joint_names;
+  for (const auto& transmission : transmissions)
+    for (const auto& joint : transmission.joints_)
+      transmitted_joint_names.insert(joint.name_);
+
+  for (const auto& entry : urdf_model->joints_)
+  {
+    const auto& joint_name = entry.first;
+    const auto& urdf_joint = entry.second;
+    if (urdf_joint == nullptr || transmitted_joint_names.count(joint_name) != 0)
+      continue;
+    if (urdf_joint->type != urdf::Joint::REVOLUTE && urdf_joint->type != urdf::Joint::CONTINUOUS &&
+        urdf_joint->type != urdf::Joint::PRISMATIC)
+      continue;
+
+    gazebo::physics::JointPtr gazebo_joint = parent_model->GetJoint(joint_name);
+    if (gazebo_joint == nullptr)
+    {
+      ROS_WARN("Passive URDF joint %s is not present in the Gazebo model", joint_name.c_str());
+      continue;
+    }
+
+    passive_joint_datas_.push_back(PassiveJointData{ gazebo_joint });
+    PassiveJointData& data = passive_joint_datas_.back();
+    data.position = gazebo_joint->Position(0);
+    data.velocity = gazebo_joint->GetVelocity(0);
+    data.effort = gazebo_joint->GetForce(0);
+    combined_joint_state_interface_.registerHandle(
+        hardware_interface::JointStateHandle(joint_name, &data.position, &data.velocity, &data.effort));
+    ROS_INFO("Registered passive Gazebo joint state: %s", joint_name.c_str());
+  }
 }
 
 void RmRobotHWSim::parseImu(XmlRpc::XmlRpcValue& imu_datas, const gazebo::physics::ModelPtr& parent_model)

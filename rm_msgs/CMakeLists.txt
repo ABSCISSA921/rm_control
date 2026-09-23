@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
         FILES
         ActuatorState.msg
+        AimCompare.msg
+        AssemblyErrorData.msg
         BalanceState.msg
         BulletSolverData.msg
         BusState.msg
@@ -24,6 +26,7 @@ add_message_files(
         ShootCmd.msg
         ShootState.msg
         ShootBeforehandCmd.msg
+        GimbalAimCmd.msg
         GimbalCmd.msg
         GimbalDesError.msg
         GimbalPosState.msg
@@ -38,6 +41,7 @@ add_message_files(
         LocalHeatState.msg
         KalmanData.msg
         MovingAverageData.msg
+        MPCGimbalAimCmd.msg
         GpioData.msg
         TofRadarData.msg
         MultiDofCmd.msg

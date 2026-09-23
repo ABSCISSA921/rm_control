@@ -38,24 +38,15 @@
 #pragma once
 
 #include <gazebo_ros_control/default_robot_hw_sim.h>
+#include <hardware_interface/joint_state_interface.h>
 #include <rm_common/hardware_interface/rm_imu_sensor_interface.h>
 #include <rm_common/hardware_interface/robot_state_interface.h>
-#include <rm_common/hardware_interface/hybrid_joint_interface.h>
 #include <std_srvs/Trigger.h>
+
+#include <list>
 
 namespace rm_gazebo
 {
-struct HybridJointData
-{
-  hardware_interface::JointHandle joint_;
-  double posDes_{}, velDes_{}, kp_{}, kd_{}, ff_{};
-};
-
-struct HybridJointCommand
-{
-  ros::Time stamp_;
-  double posDes_{}, velDes_{}, kp_{}, kd_{}, ff_{};
-};
 
 struct ImuData
 {
@@ -69,6 +60,14 @@ struct ImuData
   double linear_acc_cov[9];
 };
 
+struct PassiveJointData
+{
+  gazebo::physics::JointPtr joint_ptr;
+  double position{};
+  double velocity{};
+  double effort{};
+};
+
 class RmRobotHWSim : public gazebo_ros_control::DefaultRobotHWSim
 {
 public:
@@ -76,10 +75,11 @@ public:
                const urdf::Model* urdf_model,
                std::vector<transmission_interface::TransmissionInfo> transmissions) override;
   void readSim(ros::Time time, ros::Duration period) override;
-  void writeSim(ros::Time time, ros::Duration period) override;
 
 private:
   void parseImu(XmlRpc::XmlRpcValue& imu_datas, const gazebo::physics::ModelPtr& parent_model);
+  void registerPassiveJoints(const gazebo::physics::ModelPtr& parent_model, const urdf::Model* urdf_model,
+                             const std::vector<transmission_interface::TransmissionInfo>& transmissions);
 
   static bool switchImuStatus(std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& res)
   {
@@ -90,19 +90,17 @@ private:
     return true;
   }
 
-  rm_control::HybridJointInterface hybridJointInterface_;
   rm_control::RobotStateInterface robot_state_interface_;
+  hardware_interface::JointStateInterface combined_joint_state_interface_;
   hardware_interface::ImuSensorInterface imu_sensor_interface_;
   rm_control::RmImuSensorInterface rm_imu_sensor_interface_;
   gazebo::physics::WorldPtr world_;
   std::list<ImuData> imu_datas_;
+  std::list<PassiveJointData> passive_joint_datas_;
   ros::ServiceServer switch_imu_service_;
 
-  std::list<HybridJointData> hybridJointDatas_;
-  std::unordered_map<std::string, std::deque<HybridJointCommand> > cmdBuffer_;
 
   static bool disable_imu_;
-  double delay_{};
 };
 
 }  // namespace rm_gazebo

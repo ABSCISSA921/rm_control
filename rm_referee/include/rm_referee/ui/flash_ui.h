@@ -183,8 +183,8 @@ public:
     : FlashUi(rpc_value, base, "capacity_run_out", graph_queue, character_queue)
   {
     // Defaults assume capacity_remain_charge is normalized to [0, 1].
-    threshold_low_ = 0.2;
-    threshold_high_ = 0.4;
+    threshold_low_ = 0.15;
+    threshold_high_ = 0.20;
     if (rpc_value.hasMember("data"))
     {
       XmlRpc::XmlRpcValue& data = rpc_value["data"];

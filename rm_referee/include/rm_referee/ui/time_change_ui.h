@@ -23,7 +23,7 @@ public:
   }
   void update() override;
   void updateForQueue() override;
-  virtual void updateConfig(){};
+  virtual void updateConfig() {};
 };
 
 class TimeChangeGroupUi : public GroupUiBase
@@ -37,7 +37,7 @@ public:
   }
   void update() override;
   void updateForQueue() override;
-  virtual void updateConfig(){};
+  virtual void updateConfig() {};
 
 protected:
   std::string graph_name_;
@@ -48,7 +48,7 @@ class CapacitorTimeChangeUi : public TimeChangeUi
 public:
   explicit CapacitorTimeChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                                  std::deque<Graph>* character_queue)
-    : TimeChangeUi(rpc_value, base, "capacitor", graph_queue, character_queue){};
+    : TimeChangeUi(rpc_value, base, "capacitor", graph_queue, character_queue) {};
   void add() override;
   void updateRemainCharge(const double remain_charge, const ros::Time& time);
 
@@ -78,7 +78,7 @@ class EffortTimeChangeUi : public TimeChangeUi
 public:
   explicit EffortTimeChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                               std::deque<Graph>* character_queue)
-    : TimeChangeUi(rpc_value, base, "effort", graph_queue, character_queue){};
+    : TimeChangeUi(rpc_value, base, "effort", graph_queue, character_queue) {};
   void updateJointStateData(const sensor_msgs::JointState::ConstPtr data, const ros::Time& time);
 
 private:
@@ -92,7 +92,7 @@ class ProgressTimeChangeUi : public TimeChangeUi
 public:
   explicit ProgressTimeChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                                 std::deque<Graph>* character_queue)
-    : TimeChangeUi(rpc_value, base, "progress", graph_queue, character_queue){};
+    : TimeChangeUi(rpc_value, base, "progress", graph_queue, character_queue) {};
   void updateEngineerUiData(const rm_msgs::EngineerUi::ConstPtr data, const ros::Time& last_get_data_time);
 
 private:
@@ -106,7 +106,7 @@ class DartStatusTimeChangeUi : public TimeChangeUi
 public:
   explicit DartStatusTimeChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                                   std::deque<Graph>* character_queue)
-    : TimeChangeUi(rpc_value, base, "dart", graph_queue, character_queue){};
+    : TimeChangeUi(rpc_value, base, "dart", graph_queue, character_queue) {};
   void updateDartClientCmd(const rm_msgs::DartClientCmd::ConstPtr data, const ros::Time& last_get_data_time);
 
 private:
@@ -132,9 +132,8 @@ public:
       }
       catch (XmlRpc::XmlRpcException& e)
       {
-        ROS_FATAL_STREAM("Exception raised by XmlRpc while reading the "
-                         << "configuration: " << e.getMessage() << ".\n"
-                         << "Please check configuration is exit");
+        ROS_FATAL_STREAM("Exception raised by XmlRpc while reading the " << "configuration: " << e.getMessage() << ".\n"
+                                                                         << "Please check configuration is exit");
       }
     }
     else
@@ -263,7 +262,7 @@ class PitchAngleTimeChangeUi : public TimeChangeUi
 public:
   explicit PitchAngleTimeChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                                   std::deque<Graph>* character_queue)
-    : TimeChangeUi(rpc_value, base, "pitch", graph_queue, character_queue){};
+    : TimeChangeUi(rpc_value, base, "pitch", graph_queue, character_queue) {};
   void updateJointStateData(const sensor_msgs::JointState::ConstPtr data, const ros::Time& time);
 
 private:
@@ -276,7 +275,7 @@ class ImageTransmissionAngleTimeChangeUi : public TimeChangeUi
 public:
   explicit ImageTransmissionAngleTimeChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base,
                                               std::deque<Graph>* graph_queue, std::deque<Graph>* character_queue)
-    : TimeChangeUi(rpc_value, base, "image_transmission", graph_queue, character_queue){};
+    : TimeChangeUi(rpc_value, base, "image_transmission", graph_queue, character_queue) {};
   void updateJointStateData(const sensor_msgs::JointState::ConstPtr data, const ros::Time& time);
 
 private:
@@ -314,7 +313,7 @@ class BulletTimeChangeUi : public TimeChangeUi
 public:
   explicit BulletTimeChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                               std::deque<Graph>* character_queue)
-    : TimeChangeUi(rpc_value, base, "remaining_bullet", graph_queue, character_queue){};
+    : TimeChangeUi(rpc_value, base, "remaining_bullet", graph_queue, character_queue) {};
   void updateBulletData(const rm_msgs::BulletAllowance& data, const ros::Time& time);
   void reset();
 
@@ -328,7 +327,7 @@ class TargetDistanceTimeChangeUi : public TimeChangeUi
 public:
   explicit TargetDistanceTimeChangeUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                                       std::deque<Graph>* character_queue)
-    : TimeChangeUi(rpc_value, base, "target_distance", graph_queue, character_queue){};
+    : TimeChangeUi(rpc_value, base, "target_distance", graph_queue, character_queue) {};
   void updateTargetDistanceData(const rm_msgs::TrackData::ConstPtr& data);
 
 private:
