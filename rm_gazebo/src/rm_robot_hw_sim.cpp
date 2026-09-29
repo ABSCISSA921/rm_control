@@ -73,6 +73,7 @@ bool RmRobotHWSim::initSim(const std::string& robot_namespace, ros::NodeHandle m
     parseImu(xml_rpc_value, parent_model);
   world_ = parent_model->GetWorld();  // For gravity
   switch_imu_service_ = model_nh.advertiseService("switch_imu_status", switchImuStatus);
+  setupVelocityTruth(model_nh, parent_model);
   return ret;
 }
 
@@ -115,7 +116,76 @@ void RmRobotHWSim::readSim(ros::Time time, ros::Duration period)
     cmd = 0;
   for (auto& cmd : joint_velocity_command_)
     cmd = 0;
+
+  publishVelocityTruth(time, period);
 }
+void RmRobotHWSim::setupVelocityTruth(ros::NodeHandle& model_nh,
+                                      const gazebo::physics::ModelPtr& parent_model)
+{
+  bool enabled = false;
+  model_nh.param("gazebo_velocity_truth_enabled", enabled, false);
+  if (!enabled)
+    return;
+
+  const std::array<std::string, 4> names = { "left_wheel", "right_wheel", "base_link", "base_imu" };
+  auto& message = velocity_truth_message_;
+  message.name = { "time", "dt" };
+  for (size_t i = 0; i < names.size(); ++i)
+  {
+    velocity_truth_links_[i] = parent_model->GetLink(names[i]);
+    if (!velocity_truth_links_[i])
+    {
+      ROS_WARN("Velocity truth recording unavailable: Gazebo link %s is absent", names[i].c_str());
+      return;  // Recording availability never changes controller initialization or feedback.
+    }
+    for (const std::string& field : { "position_x", "position_y", "position_z", "velocity_x", "velocity_y",
+                                      "velocity_z", "orientation_x", "orientation_y", "orientation_z",
+                                      "orientation_w", "angular_velocity_x", "angular_velocity_y", "angular_velocity_z" })
+      message.name.push_back(names[i] + "_" + field);
+  }
+  for (size_t i = 0; i < 2; ++i)
+    for (const std::string& axis : { "x", "y", "z" })
+      message.name.push_back(names[i] + "_axis_" + axis);
+  message.value.resize(message.name.size());
+  message.stamp.resize(message.name.size());
+  velocity_truth_pub_ = model_nh.advertise<rm_msgs::DebugData>("gazebo_velocity_truth", 100);
+}
+
+void RmRobotHWSim::publishVelocityTruth(const ros::Time& time, const ros::Duration& period)
+{
+  if (!velocity_truth_pub_)
+    return;
+  auto& message = velocity_truth_message_;
+  message.value[0] = time.toSec();
+  message.value[1] = period.toSec();
+  for (size_t i = 0; i < velocity_truth_links_.size(); ++i)
+  {
+    const auto& link = velocity_truth_links_[i];
+    const auto pose = link->WorldPose();
+    // Gazebo WorldLinearVel() returns link-origin velocity, including the CoG offset.
+    // In series_legged the wheel link origins are the wheel centers.
+    const auto velocity = link->WorldLinearVel();
+    const auto angular_velocity = link->WorldAngularVel();
+    const std::array<double, 13> values = {
+        pose.Pos().X(), pose.Pos().Y(), pose.Pos().Z(), velocity.X(), velocity.Y(), velocity.Z(),
+        pose.Rot().X(), pose.Rot().Y(), pose.Rot().Z(), pose.Rot().W(),
+        angular_velocity.X(), angular_velocity.Y(), angular_velocity.Z()
+    };
+    for (size_t j = 0; j < values.size(); ++j)
+      message.value[2 + i * values.size() + j] = values[j];
+    if (i < 2)
+    {
+      const auto axis = pose.Rot().RotateVector(ignition::math::Vector3d(0., 1., 0.));
+      message.value[54 + i * 3] = axis.X();
+      message.value[55 + i * 3] = axis.Y();
+      message.value[56 + i * 3] = axis.Z();
+    }
+  }
+  for (auto& stamp : message.stamp)
+    stamp = time;
+  velocity_truth_pub_.publish(message);
+}
+
 void RmRobotHWSim::registerPassiveJoints(
     const gazebo::physics::ModelPtr& parent_model, const urdf::Model* urdf_model,
     const std::vector<transmission_interface::TransmissionInfo>& transmissions)

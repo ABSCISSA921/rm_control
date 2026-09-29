@@ -8,6 +8,13 @@
             <!--      <type>world</type>-->
             <max_step_size>0.001</max_step_size>
             <real_time_update_rate>1000</real_time_update_rate>
+            <!-- Closed-chain series_legged constraint fidelity; shared by this world. -->
+            <ode>
+                <solver>
+                    <type>quick</type>
+                    <iters>200</iters>
+                </solver>
+            </ode>
         </physics>
         <!-- A global light source -->
         <include>

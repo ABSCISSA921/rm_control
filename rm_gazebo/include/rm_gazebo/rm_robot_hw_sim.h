@@ -42,7 +42,9 @@
 #include <rm_common/hardware_interface/rm_imu_sensor_interface.h>
 #include <rm_common/hardware_interface/robot_state_interface.h>
 #include <std_srvs/Trigger.h>
+#include <rm_msgs/DebugData.h>
 
+#include <array>
 #include <list>
 
 namespace rm_gazebo
@@ -77,6 +79,8 @@ public:
   void readSim(ros::Time time, ros::Duration period) override;
 
 private:
+  void setupVelocityTruth(ros::NodeHandle& model_nh, const gazebo::physics::ModelPtr& parent_model);
+  void publishVelocityTruth(const ros::Time& time, const ros::Duration& period);
   void parseImu(XmlRpc::XmlRpcValue& imu_datas, const gazebo::physics::ModelPtr& parent_model);
   void registerPassiveJoints(const gazebo::physics::ModelPtr& parent_model, const urdf::Model* urdf_model,
                              const std::vector<transmission_interface::TransmissionInfo>& transmissions);
@@ -98,6 +102,11 @@ private:
   std::list<ImuData> imu_datas_;
   std::list<PassiveJointData> passive_joint_datas_;
   ros::ServiceServer switch_imu_service_;
+
+  // Optional simulation-only recording. Never registered as a hardware interface.
+  std::array<gazebo::physics::LinkPtr, 4> velocity_truth_links_;
+  ros::Publisher velocity_truth_pub_;
+  rm_msgs::DebugData velocity_truth_message_;
 
 
   static bool disable_imu_;
