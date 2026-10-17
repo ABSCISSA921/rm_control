@@ -1,3 +1,5 @@
+std_msgs/Header header
+
 float64 roll
 float64 pitch
 float64 d_pitch
@@ -12,3 +14,5 @@ float64 left_leg_theta_dot
 float64 right_leg_theta
 float64 right_leg_theta_dot
 float64[] linear_acc_base
+
+uint64 cycle_seq
