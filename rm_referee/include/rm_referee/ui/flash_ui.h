@@ -19,8 +19,8 @@ public:
   {
     graph_ = new Graph(rpc_value["config"], base_, id_++);
   }
-  virtual void display(const ros::Time& time){};
-  virtual void updateConfig(){};
+  virtual void display(const ros::Time& time) {};
+  virtual void updateConfig() {};
   void updateFlashUiForQueue(const ros::Time& time, bool state, bool once);
 };
 
@@ -33,8 +33,8 @@ public:
   {
     graph_name_ = graph_name;
   }
-  virtual void display(const ros::Time& time){};
-  virtual void updateConfig(){};
+  virtual void display(const ros::Time& time) {};
+  virtual void updateConfig() {};
   void updateFlashUiForQueue(const ros::Time& time, bool state, bool once);
   void updateFlashUiForQueue(const ros::Time& time, bool state, bool once, Graph* graph);
 
@@ -71,7 +71,7 @@ class CoverFlashUi : public FlashUi
 public:
   explicit CoverFlashUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                         std::deque<Graph>* character_queue)
-    : FlashUi(rpc_value, base, "cover", graph_queue, character_queue){};
+    : FlashUi(rpc_value, base, "cover", graph_queue, character_queue) {};
   void updateManualCmdData(const rm_msgs::ManualToReferee::ConstPtr data, const ros::Time& last_get_data_time) override;
 
 private:
@@ -85,7 +85,7 @@ class SpinFlashUi : public FlashUi
 public:
   explicit SpinFlashUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                        std::deque<Graph>* character_queue)
-    : FlashUi(rpc_value, base, "spin", graph_queue, character_queue){};
+    : FlashUi(rpc_value, base, "spin", graph_queue, character_queue) {};
   void updateChassisCmdData(const rm_msgs::ChassisCmd::ConstPtr data, const ros::Time& last_get_data_time);
 
 private:
@@ -98,16 +98,14 @@ class DeployFlashUi : public FlashUi
 public:
   explicit DeployFlashUi(XmlRpc::XmlRpcValue& rpc_value, Base& base, std::deque<Graph>* graph_queue,
                          std::deque<Graph>* character_queue)
-    : FlashUi(rpc_value, base, "deploy", graph_queue, character_queue){};
-  void updateAllowDeployFire(bool flag);
-  void updateChassisCmdData(const rm_msgs::ChassisCmd::ConstPtr& data);
+    : FlashUi(rpc_value, base, "deploy", graph_queue, character_queue) {};
+  void updateChassisCmdData(const rm_msgs::ChassisCmd::ConstPtr& data, const ros::Time& last_get_data_time);
   void updateChassisVelData(const geometry_msgs::Twist::ConstPtr& data);
 
 private:
   void display(const ros::Time& time) override;
   uint8_t chassis_mode_;
   double angular_z_{ 0. };
-  bool allow_deploy_fire_{ false };
 };
 
 class HeroHitFlashUi : public FlashGroupUi
@@ -217,7 +215,7 @@ public:
     }
   }
 
-  void updateCapacityData(const rm_msgs::PowerManagementSampleAndStatusData& data, const ros::Time& last_get_data_time);
+  void updateCapacityData(const rm_msgs::SuperPowerCanData& data, const ros::Time& last_get_data_time);
 
 private:
   void display(const ros::Time& time) override;

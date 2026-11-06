@@ -169,38 +169,14 @@ void SpinFlashUi::updateChassisCmdData(const rm_msgs::ChassisCmd::ConstPtr data,
 void DeployFlashUi::display(const ros::Time& time)
 {
   if (!(chassis_mode_ == rm_msgs::ChassisCmd::RAW && angular_z_ == 0.0))
-  {
-    FlashUi::updateFlashUiForQueue(time, false, true);
-    return;
-  }
-  if (allow_deploy_fire_)
-  {
-    graph_->setColor(rm_referee::GraphColor ::YELLOW);
-  }
-  else
-  {
-    graph_->setColor(rm_referee::GraphColor ::PINK);
-  }
-  FlashUi::updateFlashUiForQueue(time, false, true);
-  FlashUi::updateFlashUiForQueue(time, true, true);
+    graph_->setOperation(rm_referee::GraphOperation::DELETE);
+  FlashUi::updateFlashUiForQueue(time, (chassis_mode_ == rm_msgs::ChassisCmd::RAW && angular_z_ == 0.0), false);
 }
 
-void DeployFlashUi::updateChassisCmdData(const rm_msgs::ChassisCmd::ConstPtr& data)
+void DeployFlashUi::updateChassisCmdData(const rm_msgs::ChassisCmd::ConstPtr& data, const ros::Time& last_get_data_time)
 {
-  if (data->mode != chassis_mode_)
-  {
-    chassis_mode_ = data->mode;
-    display(ros::Time::now());
-  }
-}
-
-void DeployFlashUi::updateAllowDeployFire(bool flag)
-{
-  if (flag != allow_deploy_fire_)
-  {
-    allow_deploy_fire_ = flag;
-    display(ros::Time::now());
-  }
+  chassis_mode_ = data->mode;
+  display(last_get_data_time);
 }
 
 void DeployFlashUi::updateChassisVelData(const geometry_msgs::Twist::ConstPtr& data)
@@ -259,10 +235,10 @@ void CapacityRunOutFlashUi::display(const ros::Time& time)
   FlashUi::updateFlashUiForQueue(time, low_state_, true);
 }
 
-void CapacityRunOutFlashUi::updateCapacityData(const rm_msgs::PowerManagementSampleAndStatusData& data,
+void CapacityRunOutFlashUi::updateCapacityData(const rm_msgs::SuperPowerCanData& data,
                                                const ros::Time& last_get_data_time)
 {
-  const double capacity = data.capacity_remain_charge;
+  const double capacity = data.capacity_percentage;
   bool new_low_state = low_state_;
 
   // First message: only send UI when low; avoid spamming an initial DELETE.

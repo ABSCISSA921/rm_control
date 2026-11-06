@@ -47,6 +47,8 @@ typedef enum
   GAME_STATUS_CMD = 0x0001,
   GAME_RESULT_CMD = 0x0002,
   GAME_ROBOT_HP_CMD = 0x0003,
+  DART_STATUS_CMD = 0x0004,       // legacy, not listed in 2026 V1.2.0 command table
+  ICRA_ZONE_STATUS_CMD = 0x0005,  // legacy, not listed in 2026 V1.2.0 command table
   FIELD_EVENTS_CMD = 0x0101,
   SUPPLY_PROJECTILE_ACTION_CMD = 0x0102,
   REFEREE_WARNING_CMD = 0x0104,
@@ -55,6 +57,7 @@ typedef enum
   POWER_HEAT_DATA_CMD = 0x0202,
   ROBOT_POS_CMD = 0x0203,
   BUFF_CMD = 0x0204,
+  AERIAL_ROBOT_ENERGY_CMD = 0x0205,  // legacy, not listed in 2026 V1.2.0 command table
   ROBOT_HURT_CMD = 0x0206,
   SHOOT_DATA_CMD = 0x0207,
   BULLET_REMAINING_CMD = 0x0208,
@@ -73,6 +76,7 @@ typedef enum
   INTERACTIVE_DATA_CMD = 0x0301,
   CUSTOM_CONTROLLER_CMD = 0x0302,  // controller
   TARGET_POS_CMD = 0x0303,
+  ROBOT_COMMAND_CMD = 0x0304,  // legacy keyboard/mouse command (deleted in 2026 V1.2.0)
   CLIENT_MAP_CMD = 0x0305,
   KEYBOARD_MOUSE_CMD = 0x0306,             // 2026 table 1-42
   CUSTOM_CLIENT_CMD = KEYBOARD_MOUSE_CMD,  // legacy alias
@@ -283,26 +287,19 @@ typedef struct
   uint16_t blue_2_bullet_left;
 } __packed IcraBuffDebuffZoneStatus;
 
-typedef union
+typedef struct
 {
-  uint32_t event_data;
-  struct
-  {
-    uint32_t supply_zone_state : 1;
-    uint32_t reserved_1 : 1;
-    uint32_t supply_zone_state_rmul : 1;
-    uint32_t small_power_rune_state : 2;
-    uint32_t large_power_rune_state : 2;
-    uint32_t central_elevated_ground_state : 2;
-    uint32_t trapezoidal_elevated_ground_state : 2;
-    uint32_t be_hit_time : 9;
-    uint32_t be_hit_target : 3;
-    uint32_t central_point_state : 2;
-    uint32_t fortress_point_state : 2;
-    uint32_t outpost_point_state : 2;
-    uint32_t base_point_state : 1;
-    uint32_t reserved_2 : 2;
-  };
+  uint8_t nan_overlapping_supply_station_state : 1;
+  uint8_t overlapping_supply_station_state : 1;
+  uint8_t supplier_zone_state : 1;
+  uint8_t small_power_rune_state : 2;
+  uint8_t large_power_rune_state : 2;
+  uint8_t central_elevated_ground_state : 2;
+  uint8_t trapezoidal_elevated_ground_state : 2;
+  uint16_t be_hit_time : 9;
+  uint8_t be_hit_target : 3;
+  uint8_t central_point_state : 2;
+  uint16_t reserved : 7;
 } __packed EventData;
 
 typedef struct
@@ -642,34 +639,6 @@ typedef struct
 
 typedef struct
 {
-  uint16_t opponent_hero_position_x;
-  uint16_t opponent_hero_position_y;
-  uint16_t opponent_engineer_position_x;
-  uint16_t opponent_engineer_position_y;
-  uint16_t opponent_infantry_3_position_x;
-  uint16_t opponent_infantry_3_position_y;
-  uint16_t opponent_infantry_4_position_x;
-  uint16_t opponent_infantry_4_position_y;
-  uint16_t opponent_aerial_position_x;
-  uint16_t opponent_aerial_position_y;
-  uint16_t opponent_sentry_position_x;
-  uint16_t opponent_sentry_position_y;
-  uint16_t ally_hero_position_x;
-  uint16_t ally_hero_position_y;
-  uint16_t ally_engineer_position_x;
-  uint16_t ally_engineer_position_y;
-  uint16_t ally_infantry_3_position_x;
-  uint16_t ally_infantry_3_position_y;
-  uint16_t ally_infantry_4_position_x;
-  uint16_t ally_infantry_4_position_y;
-  uint16_t ally_aerial_position_x;
-  uint16_t ally_aerial_position_y;
-  uint16_t ally_sentry_position_x;
-  uint16_t ally_sentry_position_y;
-} __packed ClientMapReceiveData;
-
-typedef struct
-{
   uint16_t hero_position_x;
   uint16_t hero_position_y;
   uint16_t engineer_position_x;
@@ -678,72 +647,11 @@ typedef struct
   uint16_t infantry_3_position_y;
   uint16_t infantry_4_position_x;
   uint16_t infantry_4_position_y;
-  uint16_t aerial_position_x;
-  uint16_t aerial_position_y;
+  uint16_t reserved_1;
+  uint16_t reserved_2;
   uint16_t sentry_position_x;
   uint16_t sentry_position_y;
-} __packed RadarWirelessEnemyRobotPos;
-
-typedef struct
-{
-  uint16_t hero_hp;
-  uint16_t engineer_hp;
-  uint16_t infantry_3_hp;
-  uint16_t infantry_4_hp;
-  uint16_t reserved;
-  uint16_t sentry_hp;
-} __packed RadarWirelessEnemyRobotHp;
-
-typedef struct
-{
-  uint16_t hero_projectile_allowance;
-  uint16_t infantry_3_projectile_allowance;
-  uint16_t infantry_4_projectile_allowance;
-  uint16_t aerial_projectile_allowance;
-  uint16_t sentry_projectile_allowance;
-} __packed RadarWirelessEnemyProjectileAllowance;
-
-typedef struct
-{
-  uint16_t remaining_coin;
-  uint16_t total_coin;
-  uint32_t field_status;
-} __packed RadarWirelessEnemyCoinAndFieldStatus;
-
-typedef struct
-{
-  uint8_t hero_recovery_buff;
-  uint16_t hero_cooling_buff;
-  uint8_t hero_defense_buff;
-  uint8_t hero_negative_defense_buff;
-  uint16_t hero_attack_buff;
-  uint8_t engineer_recovery_buff;
-  uint16_t engineer_cooling_buff;
-  uint8_t engineer_defense_buff;
-  uint8_t engineer_negative_defense_buff;
-  uint16_t engineer_attack_buff;
-  uint8_t infantry_3_recovery_buff;
-  uint16_t infantry_3_cooling_buff;
-  uint8_t infantry_3_defense_buff;
-  uint8_t infantry_3_negative_defense_buff;
-  uint16_t infantry_3_attack_buff;
-  uint8_t infantry_4_recovery_buff;
-  uint16_t infantry_4_cooling_buff;
-  uint8_t infantry_4_defense_buff;
-  uint8_t infantry_4_negative_defense_buff;
-  uint16_t infantry_4_attack_buff;
-  uint8_t sentry_recovery_buff;
-  uint16_t sentry_cooling_buff;
-  uint8_t sentry_defense_buff;
-  uint8_t sentry_negative_defense_buff;
-  uint16_t sentry_attack_buff;
-  uint8_t sentry_posture;
-} __packed RadarWirelessEnemyRobotBuff;
-
-typedef struct
-{
-  uint8_t ascii_data[6];
-} __packed RadarWirelessEnemyCallSign;
+} __packed ClientMapReceiveData;
 
 typedef struct
 {

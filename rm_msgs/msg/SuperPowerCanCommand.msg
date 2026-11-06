@@ -1,0 +1,5 @@
+uint8 referee_chassis_power_limit
+uint8 buffer_energy
+uint8 super_power_enable
+
+time stamp

@@ -37,6 +37,8 @@
 
 #pragma once
 
+#include <array>
+#include <vector>
 #include <ros/ros.h>
 #include <unistd.h>
 #include <serial/serial.h>
@@ -61,7 +63,6 @@
 #include <rm_msgs/RobotHurt.h>
 #include <rm_msgs/ShootData.h>
 #include <rm_msgs/DartStatus.h>
-#include <rm_msgs/ChassisActiveSusCmd.h>
 #include <rm_msgs/ChassisCmd.h>
 #include <rm_msgs/GameStatus.h>
 #include <rm_msgs/RfidStatus.h>
@@ -104,6 +105,7 @@
 #include <rm_msgs/PowerManagementInitializationExceptionData.h>
 #include <rm_msgs/PowerManagementProcessStackOverflowData.h>
 #include <rm_msgs/PowerManagementUnknownExceptionData.h>
+#include <rm_msgs/SuperPowerCanData.h>
 
 namespace rm_referee
 {
@@ -130,7 +132,7 @@ public:
   void initSerial()
   {
     serial::Timeout timeout = serial::Timeout::simpleTimeout(50);
-    serial_.setPort("/dev/usbReferee");
+    serial_.setPort("/dev/ttyACM1");
     serial_.setBaudrate(115200);
     serial_.setTimeout(timeout);
     if (serial_.isOpen())

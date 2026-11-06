@@ -41,10 +41,10 @@ add_message_files(
         LocalHeatState.msg
         KalmanData.msg
         MovingAverageData.msg
-        MPCGimbalAimCmd.msg
         GpioData.msg
         TofRadarData.msg
         MultiDofCmd.msg
+        MPCGimbalAimCmd.msg
         TagMsg.msg
         TagMsgArray.msg
         SentryDeviate.msg
@@ -52,6 +52,9 @@ add_message_files(
         VTKeyboardMouseData.msg
         VTReceiverControlData.msg
         VideoPacket.msg
+        SuperPowerCanCommand.msg
+        SuperPowerCanData.msg
+        PowerModelFit.msg
 )
 
 add_service_files(
@@ -132,6 +135,7 @@ add_message_files(
 add_action_files(
         FILES
         Engineer.action
+        QueryGlobalLocalization.action
 )
 # Generate added messages and services with any dependencies listed here
 generate_messages(

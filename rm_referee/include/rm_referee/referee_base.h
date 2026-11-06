@@ -29,8 +29,6 @@ public:
   virtual void robotStatusDataCallBack(const rm_msgs::GameRobotStatus& game_robot_status_data,
                                        const ros::Time& last_get_data_time);
   virtual void gameStatusDataCallBack(const rm_msgs::GameStatus& game_status_data, const ros::Time& last_get_data_time);
-  virtual void capacityDataCallBack(const rm_msgs::PowerManagementSampleAndStatusData& data,
-                                    ros::Time& last_get_data_time);
   virtual void powerHeatDataCallBack(const rm_msgs::PowerHeatData& power_heat_data, const ros::Time& last_get_data_time);
   virtual void robotHurtDataCallBack(const rm_msgs::RobotHurt& robot_hurt_data, const ros::Time& last_get_data_time);
   virtual void bulletRemainDataCallBack(const rm_msgs::BulletAllowance& bullet_allowance,
@@ -47,7 +45,6 @@ public:
   virtual void jointStateCallback(const sensor_msgs::JointState::ConstPtr& joint_state);
   virtual void actuatorStateCallback(const rm_msgs::ActuatorState::ConstPtr& data);
   virtual void dbusDataCallback(const rm_msgs::DbusData::ConstPtr& data);
-  virtual void heroLegDataCallback(const rm_msgs::ChassisActiveSusCmd::ConstPtr& data);
   virtual void chassisCmdDataCallback(const rm_msgs::ChassisCmd::ConstPtr& data);
   virtual void vel2DCmdDataCallback(const geometry_msgs::Twist::ConstPtr& data);
   virtual void shootStateCallback(const rm_msgs::ShootState::ConstPtr& data);
@@ -58,7 +55,6 @@ public:
   virtual void radarDataCallBack(const std_msgs::Int8MultiArrayConstPtr& data);
   virtual void cameraNameCallBack(const std_msgs::StringConstPtr& data);
   virtual void trackCallBack(const rm_msgs::TrackDataConstPtr& data);
-  virtual void deployDistanceCallBack(const geometry_msgs::PointConstPtr& data);
   virtual void balanceStateCallback(const rm_msgs::BalanceStateConstPtr& data);
   virtual void leggedChassisStatusCallback(const rm_msgs::LeggedChassisStatusConstPtr& data);
   virtual void radarReceiveCallback(const rm_msgs::ClientMapReceiveData::ConstPtr& data);
@@ -72,7 +68,7 @@ public:
   virtual void radarToRefereeCallBack(const rm_msgs::RadarToSentryConstPtr& data);
   virtual void customizeDisplayCmdCallBack(const std_msgs::UInt32ConstPtr& data);
   virtual void visualizeStateDataCallBack(const rm_msgs::VisualizeStateDataConstPtr& data);
-  virtual void relocalizeProgressCallback(const std_msgs::Int32ConstPtr& data);
+  virtual void capacityDataCallBack(const rm_msgs::SuperPowerCanDataConstPtr& data);
 
   // send  ui
   void sendSerialDataCallback();
@@ -82,7 +78,6 @@ public:
   ros::Subscriber actuator_state_sub_;
   ros::Subscriber dbus_sub_;
   ros::Subscriber chassis_cmd_sub_;
-  ros::Subscriber hero_leg_data_sub_;
   ros::Subscriber vel2D_cmd_sub_;
   ros::Subscriber shoot_state_sub_;
   ros::Subscriber gimbal_cmd_sub_;
@@ -94,7 +89,6 @@ public:
   ros::Subscriber manual_data_sub_;
   ros::Subscriber camera_name_sub_;
   ros::Subscriber track_sub_;
-  ros::Subscriber deploy_distance_sub_;
   ros::Subscriber balance_state_sub_;
   ros::Subscriber legged_chassis_status_sub_;
   ros::Subscriber radar_receive_sub_;
@@ -108,7 +102,7 @@ public:
   ros::Subscriber shoot_cmd_sub_;
   ros::Subscriber customize_display_cmd_sub_;
   ros::Subscriber visualize_state_data_sub_;
-  ros::Subscriber relocalize_progress_sub_;
+  ros::Subscriber super_power_can_data_sub_;
 
   ChassisTriggerChangeUi* chassis_trigger_change_ui_{};
   ShooterTriggerChangeUi* shooter_trigger_change_ui_{};
@@ -117,11 +111,9 @@ public:
   TargetViewAngleTriggerChangeUi* target_view_angle_trigger_change_ui_{};
   CameraTriggerChangeUi* camera_trigger_change_ui_{};
   FrictionSpeedTriggerChangeUi* friction_speed_trigger_change_ui_{};
-  HeroLegTriggerChangeUi* hero_leg_trigger_change_ui_{};
 
   BulletTimeChangeUi* bullet_time_change_ui_{};
   CapacitorTimeChangeUi* capacitor_time_change_ui_{};
-  RelocalizeProgressTimeChangeUi* relocalize_progress_time_change_ui_{};
   EffortTimeChangeUi* effort_time_change_ui_{};
   ProgressTimeChangeUi* progress_time_change_ui_{};
   DartStatusTimeChangeUi* dart_status_time_change_ui_{};
@@ -134,8 +126,6 @@ public:
   JointPositionTimeChangeUi *engineer_joint1_time_change_ui{}, *engineer_joint2_time_change_ui{},
       *engineer_joint3_time_change_ui{};
   TargetDistanceTimeChangeUi* target_distance_time_change_ui_{};
-  DeployDistanceTimeChangeUi* deploy_distance_time_change_ui_{};
-  HeroLegTimeChangeUi* hero_leg_time_change_ui_{};
   FriendBulletsTimeChangeGroupUi* friend_bullets_time_change_group_ui_{};
   TargetHpTimeChangeUi* target_hp_time_change_ui_{};
 
